@@ -36,11 +36,24 @@ class App extends Component<{}, IState> {
    * Get new data from server and update the state with the new data
    */
   getDataFromServer() {
-    DataStreamer.getData((serverResponds: ServerRespond[]) => {
-      // Update the state by creating a new array of data that consists of
-      // Previous data in the state and the new data from server
-      this.setState({ data: [...this.state.data, ...serverResponds] });
-    });
+    // Define a function to repeatedly fetch data from the server
+    const fetchServerData = () => {
+      DataStreamer.getData((serverResponds: ServerRespond[]) => {
+        // Update the state by creating a new array of data that consists of
+        // Previous data in the state and the new data from server
+        this.setState((prevState) => ({ data: [...prevState.data, ...serverResponds] }));
+      });
+    };
+
+    fetchServerData();
+
+    // Set up an interval to fetch data every 100ms
+    const dataFetchInterval = setInterval(fetchServerData, 100);
+  
+    // Clear the interval when the component unmounts (or as needed)
+    this.componentWillUnmount = () => {
+      clearInterval(dataFetchInterval);
+    };
   }
 
   /**
